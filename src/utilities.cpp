@@ -1,5 +1,8 @@
 /***
  * KP Utils
+ *
+ * Tim Siltz
+ * 9/19/20
  */
 #include <numeric>
 #include <math.h>
@@ -21,7 +24,7 @@ std::vector<process_stats> stats;
 //if myString does not contain a string rep of number returns o
 //if int not large enough has undefined behaviour, very fragile
 int stringToInt(const char *myString) {
-	if (*myString == NULL){
+	if (*myString == UNINITIALIZED){
 		return 0;
 	}
 
@@ -31,7 +34,7 @@ int stringToInt(const char *myString) {
 //clears vector (or whatever datastructure you choose) holding process_stats structs
 //attempt to open file 'filename' to read, parse its rows
 //into process_stats structs and add these structs to the vector holding these structs
-//NOTE: be sure to ignore malformed rows (see 'Project 1 Description')
+//ignore malformed rows
 //if ignoreFirstRow ==true then discard the first row
 //returns SUCCESS if all goes well or COULD_NOT_OPEN_FILE
 int loadData(const char* filename, bool ignoreFirstRow) {
@@ -47,10 +50,6 @@ int loadData(const char* filename, bool ignoreFirstRow) {
 	stringstream ss;
 	string line;
 	string token;
-	process_stats p;
-	int comma = 0;
-	int column = 0;
-	bool corrupted = false;
 
 	if (ignoreFirstRow == true){
 		getline(myFile, line);
@@ -60,37 +59,56 @@ int loadData(const char* filename, bool ignoreFirstRow) {
 		getline(myFile, line);
 		ss.str(line);
 
-//		string first = line.at(0);
-//		if (first == "" || first == ","){
-//			corrupted = true;
-//		}
+		string::iterator itr;
+		process_stats temp;
+		int comma = 0;
+		bool corrupted = false;
+
+		for (itr = line.begin(); itr != line.end(); itr++){
+			if (*itr == CHAR_TO_SEARCH_FOR){
+				comma++;
+			}
+		}
 
 		getline(ss, token, CHAR_TO_SEARCH_FOR);
-		if (token == ""){
+		temp.process_number = atoi(token.c_str());
+		if (token.empty() && atoi(token.c_str()) == 0){
 			corrupted = true;
 		}
-		p.process_number = atoi(token.c_str());
-		getline(ss, token, CHAR_TO_SEARCH_FOR);
-		p.start_time = atoi(token.c_str());
-		getline(ss, token, CHAR_TO_SEARCH_FOR);
-		p.cpu_time = atoi(token.c_str());
-		//getline(ss, token, CHAR_TO_SEARCH_FOR);
-		getline(ss, token);
-		p.io_time = atoi(token.c_str());
 
-		stats.push_back(p);
+		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		temp.start_time = atoi(token.c_str());
+		if (token.empty() && atoi(token.c_str()) == 0){
+			corrupted = true;
+		}
+
+		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		temp.cpu_time = atoi(token.c_str());
+		if (token.empty() && atoi(token.c_str()) == 0){
+			corrupted = true;
+		}
+
+		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		temp.io_time = atoi(token.c_str());
+		if (token.empty() && atoi(token.c_str()) == 0){
+			corrupted = true;
+		}
+
+		if (comma != 3){
+			corrupted = true;
+		}
+
+		if(corrupted == false){
+			stats.push_back(temp);
+		}
 
 		ss.clear();
-
-		//return SUCCESS;
-
 	}
 
 	if(myFile.is_open()){
 		myFile.close();
 	}
 
-	//return COULD_NOT_OPEN_FILE;
 	return SUCCESS;
 }
 
