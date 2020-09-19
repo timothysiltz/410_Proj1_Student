@@ -38,16 +38,19 @@ int loadData(const char* filename, bool ignoreFirstRow) {
 	stats.clear();
 
 	ifstream myFile;
-	stringstream ss;
 	myFile.open(filename);
 
 	if (!myFile.is_open()){
 		return COULD_NOT_OPEN_FILE;
 	}
 
+	stringstream ss;
 	string line;
-	string numString;
+	string token;
 	process_stats p;
+	int comma = 0;
+	int column = 0;
+	bool corrupted = false;
 
 	if (ignoreFirstRow == true){
 		getline(myFile, line);
@@ -55,21 +58,32 @@ int loadData(const char* filename, bool ignoreFirstRow) {
 
 	while (!myFile.eof()){
 		getline(myFile, line);
-		stringstream ss(line);
+		ss.str(line);
 
-		getline(ss, numString, CHAR_TO_SEARCH_FOR);
-		p.process_number = stoi(numString);
-		getline(ss, numString, CHAR_TO_SEARCH_FOR);
-		p.start_time = stoi(numString);
-		getline(ss, numString, CHAR_TO_SEARCH_FOR);
-		p.cpu_time = stoi(numString);
-		//getline(ss, numString, CHAR_TO_SEARCH_FOR);
-		getline(ss, numString);
-		p.io_time = stoi(numString);
+//		string first = line.at(0);
+//		if (first == "" || first == ","){
+//			corrupted = true;
+//		}
+
+		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		if (token == ""){
+			corrupted = true;
+		}
+		p.process_number = atoi(token.c_str());
+		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		p.start_time = atoi(token.c_str());
+		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		p.cpu_time = atoi(token.c_str());
+		//getline(ss, token, CHAR_TO_SEARCH_FOR);
+		getline(ss, token);
+		p.io_time = atoi(token.c_str());
 
 		stats.push_back(p);
 
-		return SUCCESS;
+		ss.clear();
+
+		//return SUCCESS;
+
 	}
 
 	if(myFile.is_open()){
