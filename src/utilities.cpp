@@ -38,17 +38,45 @@ int loadData(const char* filename, bool ignoreFirstRow) {
 	stats.clear();
 
 	ifstream myFile;
+	stringstream ss;
 	myFile.open(filename);
 
 	if (!myFile.is_open()){
 		return COULD_NOT_OPEN_FILE;
 	}
 
+	string line;
+	string numString;
+	process_stats p;
+
+	if (ignoreFirstRow == true){
+		getline(myFile, line);
+	}
+
+	while (!myFile.eof()){
+		getline(myFile, line);
+		stringstream ss(line);
+
+		getline(ss, numString, CHAR_TO_SEARCH_FOR);
+		p.process_number = stoi(numString);
+		getline(ss, numString, CHAR_TO_SEARCH_FOR);
+		p.start_time = stoi(numString);
+		getline(ss, numString, CHAR_TO_SEARCH_FOR);
+		p.cpu_time = stoi(numString);
+		//getline(ss, numString, CHAR_TO_SEARCH_FOR);
+		getline(ss, numString);
+		p.io_time = stoi(numString);
+
+		stats.push_back(p);
+
+		return SUCCESS;
+	}
 
 	if(myFile.is_open()){
 		myFile.close();
 	}
 
+	//return COULD_NOT_OPEN_FILE;
 	return SUCCESS;
 }
 
